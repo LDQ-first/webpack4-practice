@@ -32,6 +32,9 @@ module.exports = {
   plugins: [
      // 使用 uglifyjs-webpack-plugin 来压缩 JS 代码
     new UglifyPlugin(),
-    new HtmlWebpackPlugin() 
+    new HtmlWebpackPlugin({
+      filename: 'index.html',
+      template: 'assets/index.html'
+    })
   ]
 }
