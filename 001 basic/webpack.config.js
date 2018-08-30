@@ -2,6 +2,8 @@
 // import UglifyPlugin from 'uglifyjs-webpack-plugin'
 const path = require('path')
 const UglifyPlugin = require('uglifyjs-webpack-plugin')
+const HtmlWebpackPlugin = require('html-webpack-plugin')
+
 
 module.exports = {
   entry: './src/index.js',
@@ -29,6 +31,7 @@ module.exports = {
   },
   plugins: [
      // 使用 uglifyjs-webpack-plugin 来压缩 JS 代码
-    new UglifyPlugin()
+    new UglifyPlugin(),
+    new HtmlWebpackPlugin() 
   ]
 }

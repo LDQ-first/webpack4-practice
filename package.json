@@ -7,7 +7,7 @@
     "doc": "doc"
   },
   "scripts": {
-    "git": "git add . & git commit -m '修改文件结构' & git push"
+    "git": "git add . & git commit -m '修改' & git push"
   },
   "repository": {
     "type": "git",
