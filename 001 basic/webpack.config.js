@@ -9,19 +9,19 @@ module.exports = {
   entry: './src/index.js',
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: 'main.js'
+    filename: '[name].js'
   },
   module: {
     rules: [
       {
-        test: /\.jsx?/,
+        test: /\.jsx?/, // 支持 js 和 jsx
         include: [
-          path.resolve(__dirname, 'src')
+          path.resolve(__dirname, 'src') // src 目录下的才需要经过 babel-loader 处理
         ],
         use: 'babel-loader'
       },
       {
-        test: /\.css$/,
+        test: /\.less$/,
         use: ExtractTextPlugin.extract({
           fallback: 'style-loader',
           use: [
@@ -41,20 +41,21 @@ module.exports = {
       }
     ]
   },
+  // 代码模块路径解析的配置
   resolve: {
     modules: [
-      'node_modules',
-      path.resolve(__dirname, 'src')
+      "node_modules",
+      path.resolve(__dirname, 'src'),
     ],
-    extensions: ['.wasm', '.mjs', '.js', '.json', '.jsx']
+    extensions: [".wasm", ".mjs", ".js", ".json", ".jsx"],
   },
   plugins: [
      // 使用 uglifyjs-webpack-plugin 来压缩 JS 代码
-    new UglifyPlugin(),
+    // new UglifyPlugin(),
     new HtmlWebpackPlugin({
       filename: 'index.html',
       template: 'src/index.html'
     }),
-    new ExtractTextPlugin('index.css')
+    new ExtractTextPlugin('[name].css')
   ]
 }

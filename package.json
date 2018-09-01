@@ -7,7 +7,7 @@
     "doc": "doc"
   },
   "scripts": {
-    "git": "git add . & git commit -m '添加模块' & git push"
+    "git": "git add . & git commit -m '修改bable相关模块，完成环境搭建' & git push"
   },
   "repository": {
     "type": "git",
