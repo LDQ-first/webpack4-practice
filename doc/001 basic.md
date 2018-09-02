@@ -27,19 +27,19 @@ npm run build
 > ├─package.json  
 > ├─webpack.config.js  
 > ├─src  
-> |&emsp;&emsp;├─index.html  
-> |&emsp;&emsp;├─index.js  
-> |&emsp;&emsp;├─style.less  
-> |&emsp;&emsp;├─utils.js  
-> |&emsp;&emsp;├─assets  
-> |&emsp;&emsp;|&emsp;&emsp;├─superman.gif  
-> |&emsp;&emsp;|&emsp;&emsp;└webpack.png  
+> &emsp;&emsp;├─index.html  
+> &emsp;&emsp;├─index.js  
+> &emsp;&emsp;├─style.less  
+> &emsp;&emsp;├─utils.js  
+> &emsp;&emsp;├─assets  
+> &emsp;&emsp;&emsp;&emsp;├─superman.gif  
+> &emsp;&emsp;&emsp;&emsp;└webpack.png  
 > ├─dist  
-> |&emsp;&emsp;├─658af3847fca0f13cd7173c45cc38584.png  
-> |&emsp;&emsp;├─dea8b7810fd6ddb195f988cefaf09639.gif  
-> |&emsp;&emsp;├─index.html  
-> |&emsp;&emsp;├─main.css  
-> |&emsp;&emsp;└main.js  
+> &emsp;&emsp;├─658af3847fca0f13cd7173c45cc38584.png  
+> &emsp;&emsp;├─dea8b7810fd6ddb195f988cefaf09639.gif  
+> &emsp;&emsp;├─index.html  
+> &emsp;&emsp;├─main.css  
+> &emsp;&emsp;└main.js  
 
 **注意**
 > babel-loader 8.x要配合 @babel/core @babel/preset-env 使用

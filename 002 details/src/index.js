@@ -1,6 +1,6 @@
 require('./style.less')
 
-const { log } = require('./utils')
+const { log } = require('log')
 
 log('webpack')
 

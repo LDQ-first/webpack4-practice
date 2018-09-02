@@ -7,7 +7,7 @@
     "doc": "doc"
   },
   "scripts": {
-    "git": "git add . & git commit -m \"复制 001 basic 为 002 details\" & git push"
+    "git": "git add . & git commit -m \"更多webpack配置细节\" & git push"
   },
   "repository": {
     "type": "git",
