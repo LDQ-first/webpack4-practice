@@ -91,5 +91,16 @@ module.exports = {
     new webpack.ProvidePlugin({
       _: 'lodash'
     })
-  ]
+  ],
+  devServer: {
+    port: '1234',
+    before(app) {
+      app.get('/api/test.json', (req, res) => {
+        res.json({
+          code: 200,
+          message: '/api/test.json'
+        })
+      })
+    }
+  }
 }

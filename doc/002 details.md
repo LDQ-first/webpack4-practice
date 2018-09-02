@@ -121,6 +121,24 @@ module: {
 
 
 
+9. 使用 webpack-dev-server
+
+```js
+devServer: {
+    port: '1234',
+    before(app) {
+      app.get('/api/test.json', (req, res) => {
+        res.json({
+          code: 200,
+          message: '/api/test.json'
+        })
+      })
+    }
+  }
+```
+
+
+
 
 ### 匹配条件
 
@@ -400,4 +418,64 @@ module.exports = {
 
 > IgnorePlugin 配置的参数有两个，第一个是匹配引入模块路径的正则表达式，第二个是匹配模块的对应上下文，即所在目录名。
 
+
+
+### webpack-dev-server的配置
+
+> 可以通过 devServer 字段来配置 webpack-dev-server
+
+
+> public 字段用于指定静态服务的域名，默认是 http://localhost:8080/ ，当你使用 Nginx 来做反向代理时，应该就需要使用该配置来指定 Nginx 配置使用的服务域名。
+
+> port 字段用于指定静态服务的端口，如上，默认是 8080，通常情况下都不需要改动。
+
+>  publicPath 字段用于指定构建好的静态文件在浏览器中用什么路径去访问，默认是 /，例如，对于一个构建好的文件 bundle.js，完整的访问路径是 http://localhost:8080/bundle.js，如果你配置了 publicPath: 'assets/'，那么上述 bundle.js 的完整访问路径就是 http://localhost:8080/assets/bundle.js。可以使用整个 URL 来作为 publicPath 的值，如 publicPath: 'http://localhost:8080/assets/'。如果你使用了 HMR，那么要设置 publicPath 就必须使用完整的 URL。
+
+> 建议将 devServer.publicPath 和 output.publicPath 的值保持一致。
+
+> proxy 用于配置 webpack-dev-server 将特定 URL 的请求代理到另外一台服务器上。当你有单独的后端开发服务器用于请求 API 时，这个配置相当有用。例如：
+
+```js
+proxy: {
+  '/api': {
+    target: "http://localhost:3000", // 将 URL 中带有 /api 的请求代理到本地的 3000 端口的服务上
+    pathRewrite: { '^/api': '' }, // 把 URL 中 path 部分的 `api` 移除掉
+  },
+}
+```
+
+> contentBase 用于配置提供额外静态文件内容的目录，之前提到的 publicPath 是配置构建好的结果以什么样的路径去访问，而 contentBase 是配置额外的静态文件内容的访问路径，即那些不经过 webpack 构建，但是需要在 webpack-dev-server 中提供访问的静态资源（如部分图片等）。推荐使用绝对路径：
+
+```js
+// 使用当前目录下的 public
+contentBase: path.join(__dirname, "public") 
+
+// 也可以使用数组提供多个路径
+contentBase: [path.join(__dirname, "public"), path.join(__dirname, "assets")]
+```
+
+> publicPath 的优先级高于 contentBase
+
+> before 和 after 配置用于在 webpack-dev-server 定义额外的中间件，如
+
+```js
+before(app){
+  app.get('/some/path', function(req, res) { // 当访问 /some/path 路径时，返回自定义的 json 数据
+    res.json({ custom: 'response' })
+  })
+}
+```
+
+
+> before 在 webpack-dev-server 静态资源中间件处理之前，可以用于拦截部分请求返回特定内容，或者实现简单的数据 mock。
+
+> after 在 webpack-dev-server 静态资源中间件处理之后，比较少用到，可以用于打印日志或者做一些额外处理。
+
+
+
+### webpack-dev-middleware
+
+> webpack-dev-middleware 就是在 Express 中提供 webpack-dev-server 静态服务能力的一个中间件，我们可以很轻松地将其集成到现有的 Express 代码中去，就像添加一个 Express 中间件那么简单。
+
+[mock-api-webpack-plugin](https://github.com/teabyii/mock-api-webpack-plugin)
 

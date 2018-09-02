@@ -7,7 +7,7 @@
     "doc": "doc"
   },
   "scripts": {
-    "git": "git add . & git commit -m \"使用plugin\" & git push"
+    "git": "git add . & git commit -m \"使用 webpack-dev-server\" & git push"
   },
   "repository": {
     "type": "git",
