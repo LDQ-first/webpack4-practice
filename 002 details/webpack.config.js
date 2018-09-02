@@ -4,6 +4,8 @@ const path = require('path')
 const UglifyPlugin = require('uglifyjs-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
+const CopyWebpackPlugin = require('copy-webpack-plugin')
+const webpack = require('webpack')
 
 module.exports = {
   entry: './src/index.js',
@@ -75,6 +77,19 @@ module.exports = {
       filename: 'index.html',
       template: 'src/index.html'
     }),
-    new ExtractTextPlugin('[name].css')
+    new ExtractTextPlugin('[name].css'),
+    // 全局常量
+    new webpack.DefinePlugin({
+      TWO: '1+1',
+      CONSTANTS: {
+        APP_VERSION: JSON.stringify('1.1.2'), 
+      }
+    }),
+    new CopyWebpackPlugin([
+      { from: './src/assets/favicon.ico', to: 'favicon.ico' }, // 顾名思义，from 配置来源，to 配置目标路径  
+    ]),
+    new webpack.ProvidePlugin({
+      _: 'lodash'
+    })
   ]
 }

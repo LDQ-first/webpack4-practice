@@ -6,7 +6,7 @@
 cp -r "001 basic" "002 details"
 ```
 
-2 调整文件结构
+2. 调整文件结构
 
 ```sh
 mkdir "./src/utils" | mv "./src/utils.js" "./src/utils/log.js"
@@ -14,7 +14,7 @@ mkdir "./src/utils" | mv "./src/utils.js" "./src/utils/log.js"
 
 
 
-3 修改webapck resolve配置
+3. 修改webapck resolve配置
 
 ```js
  resolve: {
@@ -31,7 +31,7 @@ mkdir "./src/utils" | mv "./src/utils.js" "./src/utils/log.js"
 ```
 
 
-4 修改引用代码
+4. 修改引用代码
 
 ```js
 
@@ -39,13 +39,13 @@ const { log } = require('log')
 
 ```
 
-5 添加 loader 
+5. 添加 loader 
 
 ```js
  npm install eslint-loader eslint -D
  ```
 
-6 修改webapck rules 配置
+6. 修改webapck rules 配置
 
 ```js
 module: {
@@ -97,8 +97,26 @@ module: {
 
 
 
+7. 使用 plugin 
 
+```js
+ // 全局常量
+    new webpack.DefinePlugin({
+      TWO: '1+1',
+      CONSTANTS: {
+        APP_VERSION: JSON.stringify('1.1.2'), 
+      }
+    }),
+    new CopyWebpackPlugin([
+      { from: 'src/assets/favicon.ico', to: 'favicon.ico' }, // 顾名思义，from 配置来源，to 配置目标路径  
+    ])
+```
 
+8. index.html 添加 favicon.ico 
+
+```html
+<link rel="shortcut icon" href="favicon.ico">
+```
 
 
 
@@ -275,5 +293,111 @@ module.exports = {
   }
 }
 ```
+
+
+### 插件
+
+**webpack.DefinePlugin**
+
+> 定义全局变量
+> 最多的方式是定义环境变量
+> 建议使用 process.env.NODE_ENV: ... 的方式来定义 process.env.NODE_ENV
+
+```js
+
+plugins: [
+    new webpack.DefinePlugin({
+      PRODUCTION: JSON.stringify(true), // const PRODUCTION = true
+      VERSION: JSON.stringify('5fa3b9'), // const VERSION = '5fa3b9'
+      BROWSER_SUPPORTS_HTML5: true, // const BROWSER_SUPPORTS_HTML5 = 'true'
+      TWO: '1+1', // const TWO = 1 + 1,
+      CONSTANTS: {
+        APP_VERSION: JSON.stringify('1.1.2') // const CONSTANTS = { APP_VERSION: '1.1.2' }
+      }
+    }),
+  ]
+```
+
+
+**copy-webpack-plugin**
+
+> 复制文件
+
+```js
+plugins: [
+    new CopyWebpackPlugin([
+      { from: 'src/file.txt', to: 'build/file.txt', }, // 顾名思义，from 配置来源，to 配置目标路径
+      { from: 'src/*.ico', to: 'build/*.ico' }, // 配置项可以使用 glob
+      // 可以配置很多项复制规则
+    ]),
+  ]
+```
+
+
+**extract-text-webpack-plugin**
+
+
+> 把依赖的 CSS 分离出来成为单独的文件
+
+
+```js
+module: {
+    rules: [
+      {
+        test: /\.css$/,
+        // 因为这个插件需要干涉模块转换的内容，所以需要使用它对应的 loader
+        use: ExtractTextPlugin.extract({ 
+          fallback: 'style-loader',
+          use: 'css-loader',
+        }), 
+      },
+    ],
+  },
+  plugins: [
+    // 引入插件，配置文件名，这里同样可以使用 [hash]
+    new ExtractTextPlugin('[name].css'),
+  ]
+```
+
+
+> 在这里要强调的是，在 webpack 中，loader 和 plugin 的区分是很清楚的，针对文件模块转换要做的使用 loader，而其他干涉构建内容的可以使用 plugin
+
+
+**webpack.ProvidePlugin**
+
+> 用于引用某些模块作为应用运行时的变量，从而不必每次都用 require 或者 import
+
+
+```js
+new webpack.ProvidePlugin({
+  identifier: 'module',
+  // ...
+})
+
+// 或者
+new webpack.ProvidePlugin({
+  identifier: ['module', 'property'], // 即引用 module 下的 property，类似 import { property } from 'module'
+  // ...
+})
+
+```
+
+
+**webpack.IgnorePlugin**
+
+> 用于忽略某些特定的模块，让 webpack 不把这些指定的模块打包进去
+
+> 例如我们使用 moment.js，直接引用后，里边有大量的 i18n 的代码，导致最后打包出来的文件比较大，而实际场景并不需要这些 i18n 的代码，这时我们可以使用 IgnorePlugin 来忽略掉这些代码文件，配置如下
+
+```js
+module.exports = {
+  // ...
+  plugins: [
+    new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/)
+  ]
+}
+```
+
+> IgnorePlugin 配置的参数有两个，第一个是匹配引入模块路径的正则表达式，第二个是匹配模块的对应上下文，即所在目录名。
 
 
