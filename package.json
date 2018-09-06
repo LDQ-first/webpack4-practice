@@ -7,7 +7,7 @@
     "doc": "doc"
   },
   "scripts": {
-    "git": "git add . & git commit -m \"抽取公共代码，按需加载\" & git push"
+    "git": "git add . & git commit -m \"安装autoprefixer postcss-loader postcss-sprites\" & git push"
   },
   "repository": {
     "type": "git",
