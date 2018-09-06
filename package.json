@@ -7,7 +7,7 @@
     "doc": "doc"
   },
   "scripts": {
-    "git": "git add . & git commit -m \"设置 HMR\" & git push"
+    "git": "git add . & git commit -m \"优化webpack配置\" & git push"
   },
   "repository": {
     "type": "git",
