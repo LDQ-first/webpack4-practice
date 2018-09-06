@@ -29,7 +29,7 @@ module.exports = {
             {
               loader: 'css-loader',
               options: {
-                minmize: true
+                minimize: true
               }
             },
             'less-loader'
@@ -79,6 +79,19 @@ module.exports = {
     ],
     extensions: [".wasm", ".mjs", ".js", ".json", ".jsx"],
   },
+  optimization: {
+    splitChunks: {
+      cacheGroups: {
+        vendor: {
+          chunks: "initial",
+          test: path.resolve(__dirname, "node_modules"), // 路径在 node_modules 目录下的都作为公共部分
+          name: "vendor", // 使用 vendor 入口作为公共部分
+          enforce: true
+        }
+      }
+    }
+  },
+
   plugins: [
      // 使用 uglifyjs-webpack-plugin 来压缩 JS 代码
     // new UglifyPlugin(),
