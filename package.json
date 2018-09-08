@@ -7,7 +7,7 @@
     "doc": "doc"
   },
   "scripts": {
-    "git": "git add . & git commit -m \"使用tree-shaking sideEffects\" & git push"
+    "git": "git add . & git commit -m \"提升 webpack 的构建速度\" & git push"
   },
   "repository": {
     "type": "git",

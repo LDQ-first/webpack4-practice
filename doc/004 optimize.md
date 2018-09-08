@@ -718,3 +718,138 @@ import { default as includes } from 'lodash-es/includes'
 > 最终 webpack 不会把 lodash-es 所有的代码内容打包进来，只是打包了你用到的那两个方法，这便是 sideEffects 的作用。
 
 
+### 提升 webpack 的构建速度
+
+**减少 resolve 的解析**
+
+```jsresolve: {
+  modules: [
+    path.resolve(__dirname, 'node_modules'), // 使用绝对路径指定 node_modules，不做过多查询
+  ],
+
+  // 删除不必要的后缀自动补全，少了文件后缀的自动匹配，即减少了文件路径查询的工作
+  // 其他文件可以在编码时指定后缀，如 import('./index.scss')
+  extensions: [".js"], 
+
+  // 避免新增默认文件，编码时使用详细的文件路径，代码会更容易解读，也有益于提高构建速度
+  mainFiles: ['index'],
+},
+
+```
+
+> 上述是可以从配置 resolve 下手提升 webpack 构建速度的配置例子。
+
+> 我们在编码时，如果是使用我们自己本地的代码模块，尽可能编写完整的路径，避免使用目录名，如：import './lib/slider/index.js'，这样的代码既清晰易懂，webpack 也不用去多次查询来确定使用哪个文件，一步到位。
+
+
+**把 loader 应用的文件范围缩小**
+
+
+
+```js
+rules: [ 
+  {
+    test: /\.jsx?/,
+    include: [ 
+      path.resolve(__dirname, 'src'), 
+      // 限定只在 src 目录下的 js/jsx 文件需要经 babel-loader 处理
+      // 通常我们需要 loader 处理的文件都是存放在 src 目录
+    ],
+    use: 'babel-loader',
+  },
+  // ...
+],
+```
+
+
+**减少 plugin 的消耗**
+
+
+> webpack 4.x 的 mode，区分 mode 会让 webpack 的构建更加有针对性，更加高效。例如当 mode 为 development 时，webpack 会避免使用一些提高应用代码加载性能的配置项，如 UglifyJsPlugin，ExtractTextPlugin 等，这样可以更快地启动开发环境的服务，而当 mode 为 production 时，webpack 会避免使用一些便于 debug 的配置，来提升构建时的速度，例如极其消耗性能的 Source Maps 支持。
+
+
+
+
+**换种方式处理图片**
+
+
+> 可以直接使用 imagemin 来做图片压缩，编写简单的命令即可。然后使用 pre-commit 这个类库来配置对应的命令，使其在 git commit 的时候触发，并且将要提交的文件替换为压缩后的文件。
+
+> 这样提交到代码仓库的图片就已经是压缩好的了，以后在项目中再次使用到的这些图片就无需再进行压缩处理了，image-webpack-loader 也就没有必要了。
+
+
+
+**使用 DLLPlugin**
+
+> DLLPlugin 是 webpack 官方提供的一个插件，也是用来分离代码的，和 optimization.splitChunks（3.x 版本的是 CommonsChunkPlugin）有异曲同工之妙，之所以把 DLLPlugin 放到 webpack 构建性能优化这一部分，是因为它的配置相对繁琐，如果项目不涉及性能优化这一块，基本上使用 optimization.splitChunks 即可。
+
+
+> 使用这个插件时需要额外的一个构建配置，用来打包公共的那一部分代码，举个例子，假设这个额外配置是 webpack.dll.config.js：
+
+
+```js
+module.exports = {
+  name: 'vendor',
+  entry: ['lodash'], // 这个例子我们打包 lodash 作为公共类库
+
+  output: {
+    path: path.resolve(__dirname, "dist"),
+    filename: "vendor.js",
+    library: "vendor_[hash]" // 打包后对外暴露的类库名称
+  },
+
+  plugins: [
+    new webpack.DllPlugin({
+      name: 'vendor_[hash]',
+      path: path.resolve(__dirname, "dist/manifest.json"), // 使用 DLLPlugin 在打包的时候生成一个 manifest 文件
+    })
+  ],
+}
+```
+
+
+> 然后就是我们正常的应用构建配置，在那个的基础上添加两个一个新的webpack.DllReferencePlugin 配置：
+
+
+```js
+module.exports = {
+  plugins: [
+    new webpack.DllReferencePlugin({
+      manifest: path.resolve(__dirname, 'dist/manifest.json'), 
+      // 指定需要用到的 manifest 文件，
+      // webpack 会根据这个 manifest 文件的信息，分析出哪些模块无需打包，直接从另外的文件暴露出来的内容中获取
+    }),
+  ],
+}
+```
+
+> 在构建的时候，我们需要优先使用 webpack.dll.config.js 来打包，如 webpack -c webpack.dll.config.js --mode production，构建后生成公共代码模块的文件 vendor.js 和 manifest.json，然后再进行应用代码的构建。
+
+
+> 你会发现构建结果的应用代码中不包含 lodash 的代码内容，这一部分代码内容会放在 vendor.js 这个文件中，而你的应用要正常使用的话，需要在 HTML 文件中按顺序引用这两个代码文件，如：
+
+```html
+<script src="vendor.js"></script>
+<script src="main.js"></script>
+```
+
+> 作用是不是和 optimization.splitChunks 很相似，但是有个区别，DLLPlugin 构建出来的内容无需每次都重新构建，后续应用代码部分变更时，你不用再执行配置为 webpack.dll.config.js 这一部分的构建，沿用原本的构建结果即可，所以相比 optimization.splitChunks，使用 DLLPlugin 时，构建速度是会有显著提高的。
+
+> 但是很显然，DLLPlugin 的配置要麻烦得多，并且需要关心你公共部分代码的变化，当你升级 lodash（即你的公共部分代码的内容变更）时，要重新去执行 webpack.dll.config.js 这一部分的构建，不然沿用的依旧是旧的构建结果，使用上并不如 optimization.splitChunks 来得方便。这是一种取舍，根据项目的实际情况采用合适的做法。
+
+> 还有一点需要注意的是，html-webpack-plugin 并不会自动处理 DLLPlugin 分离出来的那个公共代码文件，我们需要自己处理这一部分的内容，可以考虑使用 [add-asset-html-webpack-plugin](https://link.juejin.im/?target=https%3A%2F%2Fgithub.com%2FSimenB%2Fadd-asset-html-webpack-plugin)，关于这一个的使用就不讲解了，详细参考官方的说明文档：使用 [add-asset-html-webpack-plugin](https://link.juejin.im/?target=https%3A%2F%2Fgithub.com%2FSimenB%2Fadd-asset-html-webpack-plugin%23basic-usage)。
+
+
+
+### webpack 4.x 的构建性能
+
+> 可以查阅：[webpack release 4.0](https://link.juejin.im/?target=https%3A%2F%2Fgithub.com%2Fwebpack%2Fwebpack%2Freleases%2Ftag%2Fv4.0.0)，留意 performance 关键词。
+
+
+> [AST](https://link.juejin.im/?target=https%3A%2F%2Fzh.wikipedia.org%2Fzh-hans%2F%25E6%258A%25BD%25E8%25B1%25A1%25E8%25AA%259E%25E6%25B3%2595%25E6%25A8%25B9) 可以直接从 loader 直接传递给 webpack，避免额外的解析，对这一个优化细节有兴趣的可以查看这个 [PR](https://link.juejin.im/?target=https%3A%2F%2Fgithub.com%2Fwebpack%2Fwebpack%2Fpull%2F5925)。
+> 使用速度更快的 md4 作为默认的 hash 方法，对于大型项目来说，文件一多，需要 hash 处理的内容就多，webpack 的 hash 处理优化对整体的构建速度提升应该还是有一定的效果的。
+> Node 语言层面的优化，如用 for of 替换 forEach，用 Map 和 Set 替换普通的对象字面量等等，这一部分就不展开讲了，有兴趣的同学可以去 webpack 的 [PRs](https://link.juejin.im/?target=https%3A%2F%2Fgithub.com%2Fwebpack%2Fwebpack%2Fpulls%3Fq%3Dis%253Apr%2Bis%253Aclosed) 寻找更多的内容。
+> 默认开启 [uglifyjs-webpack-plugin](https://link.juejin.im/?target=https%3A%2F%2Fgithub.com%2Fwebpack-contrib%2Fuglifyjs-webpack-plugin) 的 cache 和 parallel，即缓存和并行处理，这样能大大提高 production mode 下压缩代码的速度。
+
+
+
