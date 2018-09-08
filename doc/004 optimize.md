@@ -59,7 +59,65 @@
 
 
 
+4. 使用 postscss css-sprites
 
+
+```js
+
+{
+  test: /\.less$/,
+  use: ExtractTextPlugin.extract({
+    fallback: 'style-loader',
+    use: [
+      'css-loader',
+      'postcss-loader',
+      'less-loader'
+    ]
+  })
+},
+```
+
+**postcss.config.js**
+
+```js
+module.exports = {
+  plugins: [
+    require('autoprefixer')(),
+    require('postcss-sprites')({
+      filterBy(image) {
+        if(/sprites/.test(image.url)){
+          return Promise.resolve()
+        } else {
+          return Promise.reject()
+        }
+      }
+    })
+  ]
+}
+```
+
+
+5. 使用tree-shaking, sideEffects
+
+.babelrc
+
+
+```js
+{
+    "presets": [
+      [
+        "@babel/preset-env", 
+        {
+          "modules": false,
+          "loose": true
+        }  
+      ]
+    ],
+    "plugins": [
+      "syntax-dynamic-import"
+    ]
+}
+```
 
 
 
@@ -234,6 +292,40 @@ import '~sprite.styl'
 
 > webpack 4.x，你需要配合使用 postcss 和 postcss-sprites，才能实现 CSS Sprites 的相关构建。
 
+
+```js
+
+{
+  test: /\.less$/,
+  use: ExtractTextPlugin.extract({
+    fallback: 'style-loader',
+    use: [
+      'css-loader',
+      'postcss-loader',
+      'less-loader'
+    ]
+  })
+},
+```
+
+**postcss.config.js**
+
+```js
+module.exports = {
+  plugins: [
+    require('autoprefixer')(),
+    require('postcss-sprites')({
+      filterBy(image) {
+        if(/sprites/.test(image.url)){
+          return Promise.resolve()
+        } else {
+          return Promise.reject()
+        }
+      }
+    })
+  ]
+}
+```
 
 
 
@@ -498,5 +590,131 @@ output: {
 ```
 
 > 如果没有添加注释 webpackChunkName: "lodash" 以及 output.chunkFilename 配置，那么分离出来的文件名称会以简单数字的方式标识，不便于识别。
+
+
+### Tree shaking
+
+> Tree shaking 这个术语起源于 ES2015 模块打包工具 rollup，依赖于 ES2015 模块系统中的[静态结构特性](https://link.juejin.im/?target=http%3A%2F%2Fexploringjs.com%2Fes6%2Fch_modules.html%23static-module-structure)，可以移除 JavaScript 上下文中的未引用代码，删掉用不着的代码，能够有效减少 JS 代码文件的大小。
+
+
+```js
+// src/math.js
+export function square(x) {
+  return x * x;
+}
+
+export function cube(x) {
+  return x * x * x;
+}
+
+// src/index.js
+import { cube } from './math.js' // 在这里只是引用了 cube 这个方法
+
+console.log(cube(3))
+```
+
+> 如果整个项目代码只是上述两个文件，那么很明显，square 这个方法是未被引用的代码，是可以删掉的。在 webpack 中，只有启动了 JS 代码压缩功能（即使用 uglify）时，会做 Tree shaking 的优化。webpack 4.x 需要指定 mode 为 production，而 webpack 3.x 的话需要配置 UglifyJsPlugin。启动了之后，构建出来的结果就会移除 square 的那一部分代码了。
+
+
+> 如果你在项目中使用了 Babel 的话，要把 Babel 解析模块语法的功能关掉，在 .babelrc 配置中增加 "modules": false 这个配置：
+
+```js
+{
+  "presets": [["env", { "modules": false }]]
+}
+```
+
+> 这样可以把 import/export 的这一部分模块语法交由 webpack 处理，否则没法使用 Tree shaking 的优化。
+
+
+> 有的时候你启用了 Tree shaking 功能，但是发现好像并没有什么用，例如这样一个例子：
+
+```js
+// src/component.js
+export class Person {
+  constructor ({ name }) {
+    this.name = name
+  }
+
+  getName () {
+    return this.name
+  }
+}
+
+export class Apple {
+  constructor ({ model }) {
+    this.model = model
+  }
+  getModel () {
+    return this.model
+  }
+}
+
+// src/index.js
+import { Apple } from './components'
+
+const appleModel = new Apple({
+  model: 'X'
+}).getModel()
+
+console.log(appleModel)
+```
+
+> 打包压缩后还是可以发现，Person 这一块看起来没用到的代码出现在文件中。关于这个问题，详细讲解的话篇幅太长了，建议自行阅读这一篇文章：[你的Tree-Shaking并没什么卵用](https://link.juejin.im/?target=https%3A%2F%2Fzhuanlan.zhihu.com%2Fp%2F32831172)。
+
+这篇文章最近没有更新，但是 uglify 的相关 issue [Class declaration in IIFE considered as side effect](https://link.juejin.im/?target=https%3A%2F%2Fgithub.com%2Fmishoo%2FUglifyJS2%2Fissues%2F1261) 是有进展的，现在如果你在 Babel 配置中增加 "loose": true 配置的话，Person 这一块代码就可以在构建时移除掉了。
+
+
+
+```js
+{
+    "presets": [
+      [
+        "@babel/preset-env", 
+        {
+          "modules": false,
+          "loose": true
+        }  
+      ]
+    ],
+    "plugins": [
+      "syntax-dynamic-import"
+    ]
+}
+```
+
+
+
+### sideEffects
+
+> webpack 4.x 才具备的特性
+> [side-effects/README.md](https://link.juejin.im/?target=https%3A%2F%2Fgithub.com%2Fwebpack%2Fwebpack%2Fblob%2Fmaster%2Fexamples%2Fside-effects%2FREADME.md)
+
+
+
+> 使用 lodash：
+
+```js
+import { forEach, includes } from 'lodash-es'
+
+forEach([1, 2], (item) => {
+  console.log(item)
+})
+
+console.log(includes([1, 2, 3], 1))
+```
+
+
+> 由于 lodash-es 这个模块的 package.json 文件有 sideEffects: false 的声明，所以 webpack 会将上述的代码转换为以下的代码去处理：
+
+```js
+import { default as forEach } from 'lodash-es/forEach'
+import { default as includes } from 'lodash-es/includes'
+
+// ... 其他代码
+
+```
+
+> 最终 webpack 不会把 lodash-es 所有的代码内容打包进来，只是打包了你用到的那两个方法，这便是 sideEffects 的作用。
 
 

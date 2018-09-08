@@ -1,0 +1,1 @@
+(window.webpackJsonp=window.webpackJsonp||[]).push([[1],{"./src/lib/superalert.js":function(n,t,r){"use strict";function e(n){"string"==typeof n?alert(n):alert(JSON.stringify(n))}r.r(t),r.d(t,"default",function(){return e})}}]);

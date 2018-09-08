@@ -7,7 +7,7 @@
     "doc": "doc"
   },
   "scripts": {
-    "git": "git add . & git commit -m \"使用autoprefixer postcss-loader postcss-sprites\" & git push"
+    "git": "git add . & git commit -m \"使用tree-shaking sideEffects\" & git push"
   },
   "repository": {
     "type": "git",
