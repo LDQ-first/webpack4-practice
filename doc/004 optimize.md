@@ -169,9 +169,97 @@ module.exports = {
       "@babel/transform-runtime",
       "syntax-dynamic-import"
     ]
+}{
+    "presets": [
+      [
+        "@babel/preset-env", 
+        {
+          "modules": false,
+          "loose": true,
+          "useBuiltIns": "entry",  // 是否对 babel-polyfill 进行分解，只引入所需的部分
+          "targets": {
+            "browsers": [
+              ">= 0.1%"             // 支持到哪个版本的浏览器
+              /* "last 15 versions",
+              "not android <= 4.4",
+              "not safari <= 4", 
+              "not iOS <= 7",
+              "not ie < 8" */
+              /* "last 15 chrome versions",
+              "last 15 firefox versions",
+              "ie >= 8",
+              "android >= 4.4",
+              "edge >= 12",
+              "firefox >= 50",
+              "ios >= 7",
+              "safari >= 6" */
+              // ">= 0.1% in CN"
+            ]
+          },
+          "debug": true
+        }  
+      ]
+    ],
+    "plugins": [
+      "@babel/transform-runtime",
+      "syntax-dynamic-import"
+    ]
 }
 ```
 
+
+
+
+8. 使用 mini-css-extract-plugin optimize-css-assets-webpack-plugin
+
+
+
+
+
+```js
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+
+module: {
+  rules: [
+     {
+        test: /\.(sa|sc|le|c)ss$/,
+        use: [
+          MiniCssExtractPlugin.loader,
+          'css-loader',
+          'postcss-loader',
+          'less-loader'
+        ]
+      },
+  ]
+}
+
+
+
+
+plugins: [
+     // 使用 uglifyjs-webpack-plugin 来压缩 JS 代码
+    // new UglifyPlugin(),
+    new HtmlWebpackPlugin({
+      filename: 'index.html',
+      template: 'src/index.html',
+      minify: {
+        minifyCSS: true,
+        minifyJS: true,
+        removeComments: true
+      }
+    }),
+    // new ExtractTextPlugin('[name].css'),
+    new MiniCssExtractPlugin({
+      // Options similar to the same options in webpackOptions.output
+      // both options are optional
+      filename: '[name].[hash].css',
+      chunkFilename:'[id].[hash].css',
+    }),
+    new OptimizeCSSAssetsPlugin({}),
+    new webpack.NamedModulesPlugin(),
+    new webpack.HotModuleReplacementPlugin()
+  ],
+```
 
 
 
@@ -956,3 +1044,7 @@ var _extent = require('babel-runtime/helpers/_extent');
 
 
 
+### mini-css-extract-plugin optimize-css-assets-webpack-plugin
+
+> mini-css-extract-plugin分离CSS
+> optimize-css-assets-webpack-plugin压缩css

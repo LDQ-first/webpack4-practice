@@ -5,6 +5,7 @@ const UglifyPlugin = require('uglifyjs-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin")
 const webpack = require('webpack')
 
 console.log(`process.env.NODE_ENV: `, process.env.NODE_ENV) // undefined
@@ -41,17 +42,10 @@ module.exports = {
         })
       }, */
       {
-        test: /\.(le|c)ss$/,
+        test: /\.(sa|sc|le|c)ss$/,
         use: [
-          {
-            loader: MiniCssExtractPlugin.loader
-          },
-          {
-            loader: 'css-loader',
-            options: {
-              minimize: true
-            }
-          },
+          MiniCssExtractPlugin.loader,
+          'css-loader',
           'postcss-loader',
           'less-loader'
         ]
@@ -138,6 +132,7 @@ module.exports = {
       filename: '[name].[hash].css',
       chunkFilename:'[id].[hash].css',
     }),
+    new OptimizeCSSAssetsPlugin({}),
     new webpack.NamedModulesPlugin(),
     new webpack.HotModuleReplacementPlugin()
   ],
