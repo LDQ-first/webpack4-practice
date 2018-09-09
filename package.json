@@ -7,7 +7,7 @@
     "doc": "doc"
   },
   "scripts": {
-    "git": "git add . & git commit -m \"优化babel\" & git push"
+    "git": "git add . & git commit -m \"使用mini-css-extract-plugin\" & git push"
   },
   "repository": {
     "type": "git",

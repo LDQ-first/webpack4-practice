@@ -4,7 +4,10 @@ const path = require('path')
 const UglifyPlugin = require('uglifyjs-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const webpack = require('webpack')
+
+console.log(`process.env.NODE_ENV: `, process.env.NODE_ENV) // undefined
 
 module.exports = {
   entry: './src/index.js',
@@ -21,7 +24,7 @@ module.exports = {
         ],
         use: 'babel-loader'
       },
-      {
+      /* {
         test: /\.less$/,
         use: ExtractTextPlugin.extract({
           fallback: 'style-loader',
@@ -36,6 +39,22 @@ module.exports = {
             'less-loader'
           ]
         })
+      }, */
+      {
+        test: /\.(le|c)ss$/,
+        use: [
+          {
+            loader: MiniCssExtractPlugin.loader
+          },
+          {
+            loader: 'css-loader',
+            options: {
+              minimize: true
+            }
+          },
+          'postcss-loader',
+          'less-loader'
+        ]
       },
       {
         test: /\.(png|jpe?g|gif|svg|webp)$/,
@@ -112,7 +131,13 @@ module.exports = {
         removeComments: true
       }
     }),
-    new ExtractTextPlugin('[name].css'),
+    // new ExtractTextPlugin('[name].css'),
+    new MiniCssExtractPlugin({
+      // Options similar to the same options in webpackOptions.output
+      // both options are optional
+      filename: '[name].[hash].css',
+      chunkFilename:'[id].[hash].css',
+    }),
     new webpack.NamedModulesPlugin(),
     new webpack.HotModuleReplacementPlugin()
   ],
