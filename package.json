@@ -7,7 +7,7 @@
     "doc": "doc"
   },
   "scripts": {
-    "git": "git add . & git commit -m \"提升 webpack 的构建速度\" & git push"
+    "git": "git add . & git commit -m \"优化babel\" & git push"
   },
   "repository": {
     "type": "git",

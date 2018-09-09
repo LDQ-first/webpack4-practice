@@ -4,11 +4,17 @@
         "@babel/preset-env", 
         {
           "modules": false,
-          "loose": true
+          "loose": true,
+          "useBuiltIns": "entry",
+          "targets": {
+            "browsers": ["ie>=8"]
+          },
+          "debug": true
         }  
       ]
     ],
     "plugins": [
+      "@babel/transform-runtime",
       "syntax-dynamic-import"
     ]
 }

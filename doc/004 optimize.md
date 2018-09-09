@@ -120,6 +120,59 @@ module.exports = {
 ```
 
 
+6. 使用 @babel/plugin-transform-runtime @babel/runtime
+
+.babelrc
+
+```js
+{
+    "presets": [
+      [
+        "@babel/preset-env", 
+        {
+          "modules": false,
+          "loose": true
+        }  
+      ]
+    ],
+    "plugins": [
+      "@babel/transform-runtime",
+      "syntax-dynamic-import"
+    ]
+}
+```
+
+
+
+7. 使用 @babel/polyfill
+
+
+.babelrc 
+
+```js
+{
+    "presets": [
+      [
+        "@babel/preset-env", 
+        {
+          "modules": false,
+          "loose": true,
+          "useBuiltIns": "entry", // 入口处引入polyfill
+          "targets": {
+            "browsers": ["ie>=8"]  // 浏览器环境，配置需要兼容的浏览器列表
+          },
+          "debug": true
+        }  
+      ]
+    ],
+    "plugins": [
+      "@babel/transform-runtime",
+      "syntax-dynamic-import"
+    ]
+}
+```
+
+
 
 
 
@@ -850,6 +903,56 @@ module.exports = {
 > 使用速度更快的 md4 作为默认的 hash 方法，对于大型项目来说，文件一多，需要 hash 处理的内容就多，webpack 的 hash 处理优化对整体的构建速度提升应该还是有一定的效果的。
 > Node 语言层面的优化，如用 for of 替换 forEach，用 Map 和 Set 替换普通的对象字面量等等，这一部分就不展开讲了，有兴趣的同学可以去 webpack 的 [PRs](https://link.juejin.im/?target=https%3A%2F%2Fgithub.com%2Fwebpack%2Fwebpack%2Fpulls%3Fq%3Dis%253Apr%2Bis%253Aclosed) 寻找更多的内容。
 > 默认开启 [uglifyjs-webpack-plugin](https://link.juejin.im/?target=https%3A%2F%2Fgithub.com%2Fwebpack-contrib%2Fuglifyjs-webpack-plugin) 的 cache 和 parallel，即缓存和并行处理，这样能大大提高 production mode 下压缩代码的速度。
+
+
+
+### @babel/plugin-transform-runtime  @babel/runtime
+
+
+> babel-plugin-transform-runtime 是 Babel 官方提供的一个插件，作用是减少冗余代码。 Babel 在把 ES6 代码转换成 ES5 代码时通常需要一些 ES5 写的辅助函数来完成新语法的实现，例如在转换 class extent 语法时会在转换后的 ES5 代码里注入 _extent 辅助函数用于实现继承：
+
+```js
+function _extent(target) {
+  for (var i = 1; i < arguments.length; i++) {
+    var source = arguments[i];
+    for (var key in source) {
+      if (Object.prototype.hasOwnProperty.call(source, key)) {
+        target[key] = source[key];
+      }
+    }
+  }
+  return target;
+}
+```
+
+
+> 这会导致每个使用了 class extent 语法的文件都被注入重复的_extent 辅助函数代码，babel-plugin-transform-runtime 的作用在于不把辅助函数内容注入到文件里，而是注入一条导入语句：
+
+```js
+var _extent = require('babel-runtime/helpers/_extent');
+```
+
+> 这样能减小 Babel 编译出来的代码的文件大小。
+
+> 同时需要注意的是由于 babel-plugin-transform-runtime 注入了 require('babel-runtime/helpers/_extent') 语句到编译后的代码里，需要安装 babel-runtime 依赖到你的项目后，代码才能正常运行。 也就是说 babel-plugin-transform-runtime 和 babel-runtime 需要配套使用，使用了 babel-plugin-transform-runtime 后一定需要 babel-runtime。
+
+
+
+
+### @babel/polyfill
+
+> 默认情况下babel可以将箭头函数，class等语法转换为ES5兼容的形式，但是却不能转换Map，Set，Promise等新的全局对象，这时候就需要使用polyfill去模拟这些新特性
+
+> Babel 包含一个可自定义 [regenerator runtime](https://github.com/facebook/regenerator/blob/master/packages/regenerator-runtime/runtime.js) 和 [core-js](https://github.com/zloirock/core-js) 的 [polyfill](https://en.wikipedia.org/wiki/Polyfill_(programming)) .
+
+> 它会仿效一个完整的 ES2015+ 环境，并意图运行于一个应用中而不是一个库/工具。这个 polyfill 会在使用 babel-node 时自动加载。
+
+> 这意味着你可以使用新的内置对象比如 Promise 或者 WeakMap, 静态方法比如 Array.from 或者 Object.assign, 实例方法比如 Array.prototype.includes 和生成器函数（提供给你使用 [regenerator](https://www.babeljs.cn/docs/plugins/transform-regenerator/) 插件）。为了达到这一点， polyfill 添加到了全局范围，就像原生类型比如 String 一样。
+
+
+
+[babel-polyfill的几种使用方式](https://www.jianshu.com/p/3b27dfc6785c)
+
 
 
 
