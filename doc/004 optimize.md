@@ -262,6 +262,28 @@ plugins: [
 ```
 
 
+9. 使用 postcss-preset-env
+
+
+```js
+module.exports = {
+  plugins: [
+    // require('autoprefixer')(),
+    require('postcss-sprites')({
+      filterBy(image) {
+        if(/sprites/.test(image.url)){
+          return Promise.resolve()
+        } else {
+          return Promise.reject()
+        }
+      }
+    }),
+    require('postcss-preset-env')({
+      'autoprefixer': '',
+    })
+  ]
+}
+```
 
 
 
@@ -1048,3 +1070,10 @@ var _extent = require('babel-runtime/helpers/_extent');
 
 > mini-css-extract-plugin分离CSS
 > optimize-css-assets-webpack-plugin压缩css
+
+
+### postcss-preset-env
+
+> 使用下一代css
+> 自带autoprefixer
+

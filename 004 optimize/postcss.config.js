@@ -1,6 +1,6 @@
 module.exports = {
   plugins: [
-    require('autoprefixer')(),
+    // require('autoprefixer')(),
     require('postcss-sprites')({
       filterBy(image) {
         if(/sprites/.test(image.url)){
@@ -9,6 +9,9 @@ module.exports = {
           return Promise.reject()
         }
       }
+    }),
+    require('postcss-preset-env')({
+      'autoprefixer': '',
     })
   ]
 }
