@@ -5,7 +5,7 @@
         {
           "modules": false,
           "loose": true,
-          "useBuiltIns": "entry",
+          "useBuiltIns": "usage",
           "targets": {
             "browsers": [
               ">= 0.1%"
@@ -30,7 +30,7 @@
       ]
     ],
     "plugins": [
-      "@babel/transform-runtime",
+      "@babel/plugin-transform-runtime",
       "syntax-dynamic-import"
     ]
 }

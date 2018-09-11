@@ -136,7 +136,8 @@ module.exports = {
       ]
     ],
     "plugins": [
-      "@babel/transform-runtime",
+      [ 
+       "@babel/plugin-transform-runtime",
       "syntax-dynamic-import"
     ]
 }
@@ -166,7 +167,7 @@ module.exports = {
       ]
     ],
     "plugins": [
-      "@babel/transform-runtime",
+      "@babel/plugin-transform-runtime",
       "syntax-dynamic-import"
     ]
 }{
@@ -201,7 +202,7 @@ module.exports = {
       ]
     ],
     "plugins": [
-      "@babel/transform-runtime",
+      "@babel/plugin-transform-runtime",
       "syntax-dynamic-import"
     ]
 }
