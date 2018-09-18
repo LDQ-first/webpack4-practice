@@ -1,4 +1,114 @@
 
+### 更多优化
+
+1. 使用 Source Map
+
+```js
+module.exports = (env, argv) => {
+
+  return {
+    devtool: argv.mode === 'development' ? 'cheap-module-eval-source-map' 
+                                       : 'hidden-source-map',
+    entry: './src/index.js',
+    output: {
+      path: path.resolve(__dirname, 'dist'),
+      filename: '[name].js'
+    },
+    module: {
+      rules: [
+        
+      ]
+    },
+    ...
+
+}
+```
+
+
+
+2. 使用 DllPlugin
+
+
+**webpack.dll.config.js**
+
+```js
+const webpack = require('webpack')
+const path = require('path')
+
+module.exports = {
+  entry: {
+    vendor: ['lodash-es', '@babel/polyfill']
+  },
+  output: {
+    path: path.resolve(__dirname, 'src/build'),
+    filename: '[name].js',
+    library: '[name]_library'
+  },
+  plugins: [
+    new webpack.DllPlugin({
+      path: './src/build/vendor.manifest.json',
+      name: '[name]_library'
+    })
+  ]
+}
+```
+
+
+
+
+
+```js
+
+plugins: [
+      new HtmlWebpackPlugin({
+        filename: 'index.html',
+        template: 'src/index.html',
+        minify: {
+          minifyCSS: true,
+          minifyJS: true,
+          removeComments: true
+        }
+      }),
+      new webpack.DllReferencePlugin({
+        context: '.',
+        manifest: require('./src/build/vendor.manifest.json')
+      }),
+      new CleanWebpackPlugin('./dist'),
+      new CopyWebpackPlugin([
+        { from: './src/build', to: './src/build' }
+      ])
+    ]
+
+```
+
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <div class="main">
+        <div class="superman"></div>
+        <div class="webpack"></div>
+    </div>
+    <script src="./src/build/vendor.js"></script>
+</body>
+</html>
+```
+
+
+
+
+
+
+
+
+
 ###  web-webpack-plugin
 
 [web-webpack-plugin](https://github.com/gwuhaolin/web-webpack-plugin)
@@ -116,6 +226,11 @@ npm i -D source-map-loader
 
 
 
+
+### 使用 DllPlugin
+
+
+[DllPlugin](https://webpack.js.org/plugins/dll-plugin/) 
 
 
 

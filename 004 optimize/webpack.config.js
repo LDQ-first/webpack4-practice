@@ -6,6 +6,8 @@ const HtmlWebpackPlugin = require('html-webpack-plugin')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin")
+const CopyWebpackPlugin = require('copy-webpack-plugin')
+const CleanWebpackPlugin = require('clean-webpack-plugin')
 const webpack = require('webpack')
 
 console.log(`process.env.NODE_ENV: `, process.env.NODE_ENV) // undefined
@@ -146,7 +148,15 @@ module.exports = (env, argv) => {
       }),
       new OptimizeCSSAssetsPlugin({}),
       new webpack.NamedModulesPlugin(),
-      new webpack.HotModuleReplacementPlugin()
+      new webpack.HotModuleReplacementPlugin(),
+      new webpack.DllReferencePlugin({
+        context: '.',
+        manifest: require('./src/build/vendor.manifest.json')
+      }),
+      new CleanWebpackPlugin('./dist'),
+      new CopyWebpackPlugin([
+        { from: './src/build', to: './src/build' }
+      ])
     ],
     devServer: {
       hot: true

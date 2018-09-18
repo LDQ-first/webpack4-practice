@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "build": "webpack --mode production",
-    "start": "webpack-dev-server --mode development"
+    "start": "webpack-dev-server --mode development",
+    "webpack-dll": "webpack --config webpack.dll.config.js"
   },
   "repository": {
     "type": "git",
@@ -26,6 +27,8 @@
     "autoprefixer": "^9.1.5",
     "babel-loader": "^8.0.0",
     "babel-plugin-syntax-dynamic-import": "^6.18.0",
+    "clean-webpack-plugin": "^0.1.19",
+    "copy-webpack-plugin": "^4.5.2",
     "css-loader": "^1.0.0",
     "extract-text-webpack-plugin": "^4.0.0-beta.0",
     "file-loader": "^2.0.0",
