@@ -134,6 +134,42 @@ plugins: [
 ```
 
 
+4. 使用 HappyPack
+
+
+```js
+const HappyPack = require('happypack')
+// 构造出共享进程池，进程池中包含5个子进程
+const happyThreadPool = HappyPack.ThreadPool({ size: 5 })
+
+
+module: {
+    rules: [
+      {
+        test: /\.jsx?/, // 支持 js 和 jsx
+        include: [
+          path.resolve(__dirname, 'src') // src 目录下的才需要经过 babel-loader 处理
+        ],
+        use: 'happypack/loader?id=babel'
+      },
+  ]
+}
+
+
+plugins: [
+  new HappyPack({
+    // 用唯一的标识符 id 来代表当前的 HappyPack 是用来处理一类特定的文件
+    id: 'babel',
+    // 如何处理 .js 文件，用法和 Loader 配置中一样
+    loaders: ['babel-loader?cacheDirectory'],
+    // 使用共享进程池中的子进程去处理任务
+    threadPool: happyThreadPool
+  }),
+  
+],
+```
+
+
 
 
 
@@ -271,6 +307,9 @@ npm i -D source-map-loader
 ### 使用 AutoDllPlugin
 
 [AutoDllPlugin](https://github.com/asfktz/autodll-webpack-plugin)
+
+
+### 使用 HappyPack
 
 
 
