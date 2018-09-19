@@ -102,6 +102,39 @@ plugins: [
 ```
 
 
+3. 使用 AutoDllPlugin
+
+
+
+```js
+plugins: [
+  new HtmlWebpackPlugin({
+    filename: 'index.html',
+    template: 'src/index.html',
+    minify: {
+      minifyCSS: true,
+      minifyJS: true,
+      removeComments: true
+    }
+  }),
+  new AutoDllPlugin({
+    inject: true,
+    debug: true,
+    filename: '[name]_[hash].js',
+    path: './dll',
+    entry: {
+      vendor: [
+        'lodash-es',
+        '@babel/polyfill'
+      ]
+    }
+  }),
+],
+
+```
+
+
+
 
 
 
@@ -235,6 +268,9 @@ npm i -D source-map-loader
 
 
 
+### 使用 AutoDllPlugin
+
+[AutoDllPlugin](https://github.com/asfktz/autodll-webpack-plugin)
 
 
 

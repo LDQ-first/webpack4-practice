@@ -8,6 +8,7 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin")
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 const CleanWebpackPlugin = require('clean-webpack-plugin')
+const AutoDllPlugin = require('autodll-webpack-plugin')
 const webpack = require('webpack')
 
 console.log(`process.env.NODE_ENV: `, process.env.NODE_ENV) // undefined
@@ -139,6 +140,18 @@ module.exports = (env, argv) => {
           removeComments: true
         }
       }),
+      new AutoDllPlugin({
+        inject: true,
+        debug: true,
+        filename: '[name]_[hash].js',
+        path: './dll',
+        entry: {
+          vendor: [
+            'lodash-es',
+           '@babel/polyfill'
+          ]
+        }
+      }),
       // new ExtractTextPlugin('[name].css'),
       new MiniCssExtractPlugin({
         // Options similar to the same options in webpackOptions.output
@@ -149,14 +162,15 @@ module.exports = (env, argv) => {
       new OptimizeCSSAssetsPlugin({}),
       new webpack.NamedModulesPlugin(),
       new webpack.HotModuleReplacementPlugin(),
-      new webpack.DllReferencePlugin({
+      /* new webpack.DllReferencePlugin({
         context: '.',
         manifest: require('./src/build/vendor.manifest.json')
-      }),
-      new CleanWebpackPlugin('./dist'),
-      new CopyWebpackPlugin([
+      }), */
+      argv.mode === 'development' ? new CleanWebpackPlugin('') : 
+                                    new CleanWebpackPlugin('./dist'),
+      /* new CopyWebpackPlugin([
         { from: './src/build', to: './src/build' }
-      ])
+      ]) */
     ],
     devServer: {
       hot: true
