@@ -10,14 +10,24 @@ const CopyWebpackPlugin = require('copy-webpack-plugin')
 const CleanWebpackPlugin = require('clean-webpack-plugin')
 const AutoDllPlugin = require('autodll-webpack-plugin')
 const HappyPack = require('happypack')
+const os = require('os')
 // 构造出共享进程池，进程池中包含5个子进程
-const happyThreadPool = HappyPack.ThreadPool({ size: 5 })
+const happyThreadPool = HappyPack.ThreadPool({ size: os.cpus().length })
+const ParalleUglifyPlugin = require('webpack-parallel-uglify-plugin')
 const webpack = require('webpack')
 
 
 
 console.log(`process.env.NODE_ENV: `, process.env.NODE_ENV) // undefined
 
+
+const createHappyPlugin = (id, loaders) => {
+  return new HappyPack({
+    id,
+    loaders,
+    threadPool: happyThreadPool
+  })
+}
 
 
 module.exports = (env, argv) => {
@@ -38,6 +48,7 @@ module.exports = (env, argv) => {
             path.resolve(__dirname, 'src') // src 目录下的才需要经过 babel-loader 处理
           ],
           use: 'happypack/loader?id=babel'
+          /* use: 'babel-loader?cacheDirectory=true' */
         },
         /* {
           test: /\.less$/,
@@ -59,13 +70,7 @@ module.exports = (env, argv) => {
           test: /\.(sa|sc|le|c)ss$/,
           use: [
             MiniCssExtractPlugin.loader,
-            {
-              loader: 'css-loader',
-              /* options: {
-                modules: true, 
-                importLoaders: 2
-              } */
-            },
+            'css-loader',
             'postcss-loader',
             'less-loader'
           ]
@@ -157,13 +162,25 @@ module.exports = (env, argv) => {
           ]
         }
       }),
-      new HappyPack({
+      /* new HappyPack({
         // 用唯一的标识符 id 来代表当前的 HappyPack 是用来处理一类特定的文件
         id: 'babel',
         // 如何处理 .js 文件，用法和 Loader 配置中一样
         loaders: ['babel-loader?cacheDirectory'],
         // 使用共享进程池中的子进程去处理任务
         threadPool: happyThreadPool
+      }), */
+      createHappyPlugin('babel', ['babel-loader?cacheDirectory=true']),
+      new ParalleUglifyPlugin({
+        uglifyJS: {
+          output: {
+            comments: false
+          },
+          compress: {
+            warnings: false,
+            // drop_console: true
+          }
+        }
       }),
       // new ExtractTextPlugin('[name].css'),
       new MiniCssExtractPlugin({

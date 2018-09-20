@@ -139,9 +139,18 @@ plugins: [
 
 ```js
 const HappyPack = require('happypack')
+const os = require('os')
 // 构造出共享进程池，进程池中包含5个子进程
-const happyThreadPool = HappyPack.ThreadPool({ size: 5 })
+const happyThreadPool = HappyPack.ThreadPool({ size: os.cpus().length })
 
+
+const createHappyPlugin = (id, loaders) => {
+  return new HappyPack({
+    id,
+    loaders,
+    threadPool: happyThreadPool
+  })
+}
 
 module: {
     rules: [
@@ -157,18 +166,41 @@ module: {
 
 
 plugins: [
-  new HappyPack({
+  /* new HappyPack({
     // 用唯一的标识符 id 来代表当前的 HappyPack 是用来处理一类特定的文件
     id: 'babel',
     // 如何处理 .js 文件，用法和 Loader 配置中一样
     loaders: ['babel-loader?cacheDirectory'],
     // 使用共享进程池中的子进程去处理任务
     threadPool: happyThreadPool
-  }),
-  
+  }), */
+  createHappyPlugin('babel', ['babel-loader?cacheDirectory=true'])
 ],
 ```
 
+
+5. 使用 webpack-parallel-uglify-plugin
+
+
+
+```js
+const ParalleUglifyPlugin = require('webpack-parallel-uglify-plugin')
+
+
+ plugins: [
+      new ParalleUglifyPlugin({
+        uglifyJS: {
+          output: {
+            comments: false
+          },
+          compress: {
+            warnings: false,
+            // drop_console: true
+          }
+        }
+      }),
+    ],
+```
 
 
 
@@ -311,8 +343,13 @@ npm i -D source-map-loader
 
 ### 使用 HappyPack
 
+[HappyPack](https://github.com/amireh/happypack)
 
 
+### 使用 webpack-parallel-uglify-plugin
+
+
+[webpack-parallel-uglify-plugin](https://github.com/gdborton/webpack-parallel-uglify-plugin)
 
 
 

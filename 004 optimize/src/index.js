@@ -9,5 +9,6 @@ log(map([1, 2, 3], square))
 import('./lib/superalert').then(({ default: superalert }) => {
   superalert({ a:1 })
 })
-
+/* comment */
+console.log('console.log')
 
