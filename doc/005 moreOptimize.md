@@ -381,3 +381,86 @@ npm i -D source-map-loader
 
 > 要开发的网页被放进了一个 iframe 中，编辑源码后，iframe 会被自动刷新。
 
+
+
+### 开启模块热替换
+
+
+> DevServer 默认不会开启模块热替换模式，要开启该模式，只需在启动时带上参数 --hot，完整命令是 webpack-dev-server --hot。
+
+> 除了通过在启动时带上 --hot 参数，还可以通过接入 Plugin 实现，相关代码如下：
+
+
+```js
+const HotModuleReplacementPlugin = require('webpack/lib/HotModuleReplacementPlugin');
+
+module.exports = {
+  entry:{
+    // 为每个入口都注入代理客户端
+    main:['webpack-dev-server/client?http://localhost:8080/', 'webpack/hot/dev-server','./src/main.js'],
+  },
+  plugins: [
+    // 该插件的作用就是实现模块热替换，实际上当启动时带上 `--hot` 参数，会注入该插件，生成 .hot-update.json 文件。
+    new HotModuleReplacementPlugin(),
+  ],
+  devServer:{
+    // 告诉 DevServer 要开启模块热替换模式
+    hot: true,      
+  }  
+}
+```
+
+
+
+> Webpack 为了让使用者在使用了模块热替换功能时能灵活地控制老模块被替换时的逻辑，可以在源码中定义一些代码去做相应的处理。
+
+> 把的 main.js 文件改为如下：
+
+
+```js
+import React from 'react';
+import { render } from 'react-dom';
+import { AppComponent } from './AppComponent';
+import './main.css';
+
+render(<AppComponent/>, window.document.getElementById('app'));
+
+// 只有当开启了模块热替换时 module.hot 才存在
+if (module.hot) {
+  // accept 函数的第一个参数指出当前文件接受哪些子模块的替换，这里表示只接受 ./AppComponent 这个子模块
+  // 第2个参数用于在新的子模块加载完毕后需要执行的逻辑
+  module.hot.accept(['./AppComponent'], () => {
+    // 新的 AppComponent 加载成功后重新执行下组建渲染逻辑
+    render(<AppComponent/>, window.document.getElementById('app'));
+  });
+}
+```
+
+> 其中的 module.hot 是当开启模块热替换后注入到全局的 API，用于控制模块热替换的逻辑。
+
+> 现在修改 AppComponent.js 文件，把 Hello,Webpack 改成 Hello,World，你会发现模块热替换生效了。 但是当你编辑 main.js 时，你会发现整个网页被刷新了。为什么修改这两个文件会有不一样的表现呢？
+
+> 当子模块发生更新时，更新事件会一层层往上传递，也就是从 AppComponent.js 文件传递到 main.js 文件， 直到有某层的文件接受了当前变化的模块，也就是 main.js 文件中定义的 module.hot.accept(['./AppComponent'], callback)， 这时就会调用 callback 函数去执行自定义逻辑。如果事件一直往上抛到最外层都没有文件接受它，就会直接刷新网页。
+
+> 那为什么没有地方接受过 .css 文件，但是修改所有的 .css 文件都会触发模块热替换呢？ 原因在于 style-loader 会注入用于接受 CSS 的代码。
+
+
+
+### 优化模块热替换
+
+
+> 其中的 Updated modules: 68 是指 ID 为68的模块被替换了，这对开发者来说很不友好，因为开发者不知道 ID 和模块之间的对应关系，最好是把替换了的模块的名称输出出来。 Webpack 内置的 NamedModulesPlugin 插件可以解决该问题，修改 Webpack 配置文件接入该插件：
+
+
+```js
+module.exports = {
+  plugins: [
+    // 显示出被替换模块的名称
+    new webpack.NamedModulesPlugin()
+  ],
+}
+```
+
+> 重启构建后你会发现浏览器中的日志更加友好了
+
+

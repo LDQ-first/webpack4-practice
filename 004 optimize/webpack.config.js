@@ -192,6 +192,7 @@ module.exports = (env, argv) => {
       new OptimizeCSSAssetsPlugin({}),
       new webpack.NamedModulesPlugin(),
       new webpack.HotModuleReplacementPlugin(),
+      new webpack.NamedModulesPlugin(),
       /* new webpack.DllReferencePlugin({
         context: '.',
         manifest: require('./src/build/vendor.manifest.json')

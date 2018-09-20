@@ -7,7 +7,7 @@
     "doc": "doc"
   },
   "scripts": {
-    "git": "git add . & git commit -m \"优化自动刷新的性能\" & git push"
+    "git": "git add . & git commit -m \"模块热替换\" & git push"
   },
   "repository": {
     "type": "git",
