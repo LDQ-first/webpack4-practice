@@ -353,4 +353,31 @@ npm i -D source-map-loader
 
 
 
+### 自动刷新浏览器
+
+> 监听到文件更新后的下一步是去刷新浏览器，webpack 模块负责监听文件，webpack-dev-server 模块则负责刷新浏览器。 在使用 webpack-dev-server 模块去启动 webpack 模块时，webpack 模块的监听模式默认会被开启。 webpack 模块会在文件发生变化时告诉 webpack-dev-server 模块。
+
+
+### 自动刷新的原理
+
+> 控制浏览器刷新有三种方法：
+
+> 借助浏览器扩展去通过浏览器提供的接口刷新，WebStorm IDE 的 LiveEdit 功能就是这样实现的。
+> 往要开发的网页中注入代理客户端代码，通过代理客户端去刷新整个页面。
+> 把要开发的网页装进一个 iframe 中，通过刷新 iframe 去看到最新效果。
+> DevServer 支持第2、3种方法，第2种是 DevServer 默认采用的刷新方法。
+
+
+### 优化自动刷新的性能
+
+> 在2-6 DevServer中曾介绍过 devServer.inline 配置项，它就是用来控制是否往 Chunk 中注入代理客户端的，默认会注入。 事实上，在开启 inline 时，DevServer 会为每个输出的 Chunk 中注入代理客户端的代码，当你的项目需要输出的 Chunk 有很多个时，这会导致你的构建缓慢。 其实要完成自动刷新，一个页面只需要一个代理客户端就行了，DevServer 之所以粗暴的为每个 Chunk 都注入，是因为它不知道某个网页依赖哪几个 Chunk，索性就全部都注入一个代理客户端。 网页只要依赖了其中任何一个 Chunk，代理客户端就被注入到网页中去。
+
+> 这里优化的思路是关闭还不够优雅的 inline 模式，只注入一个代理客户端。 为了关闭 inline 模式，在启动 DevServer 时，可通过执行命令 webpack-dev-server --inline false
+
+
+> 入口网址变成了 http://localhost:8080/webpack-dev-server/
+> bundle.js 中不再包含代理客户端的代码了
+
+
+> 要开发的网页被放进了一个 iframe 中，编辑源码后，iframe 会被自动刷新。
 
